@@ -8,5 +8,60 @@ turner_map = pd.pivot_table(turner_map, index=["top"], columns=["bottom"], value
 
 turner_loop_map = pd.read_csv('turner_loop_map.csv')
 
-print(turner_map)
-print(turner_loop_map)
+# print(turner_map)
+# print(turner_loop_map)
+
+structure = """
+ C
+U  U
+U  A
+ GC
+ UA
+G |
+ CG
+ UA"""
+
+class pair(object):
+    left = ""
+    right = ""
+    isLoop = False
+
+def structure_free_energy(structure) -> float:
+    # TODO
+    return 0.0
+
+
+
+def runTests():
+    structureA = """
+ AG 
+U  C
+G  A
+ UG 
+G | 
+ CG 
+ AU 
+"""
+    assert structure_free_energy(structureA) == -3.4 # TODO
+    structureB = """
+ GU 
+U  G
+ CG 
+C  C
+A  C
+ UA 
+C | 
+A | 
+ UG 
+ AU 
+G | 
+C | 
+ UA 
+C | 
+ AU 
+ GC 
+U  |
+ GU 
+ U  C
+"""
+    assert structure_free_energy(structureB) == 15.5
