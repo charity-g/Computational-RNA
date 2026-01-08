@@ -17,19 +17,13 @@ U  U
 U  A
  GC
  UA
-G |
+ G|
  CG
  UA"""
-
-class pair(object):
-    left = ""
-    right = ""
-    isLoop = False
 
 def structure_free_energy(structure) -> float:
     # TODO
     return 0.0
-
 
 
 def runTests():
@@ -38,7 +32,7 @@ def runTests():
 U  C
 G  A
  UG 
-G | 
+ G| 
  CG 
  AU 
 """
@@ -50,18 +44,18 @@ U  G
 C  C
 A  C
  UA 
-C | 
-A | 
+ C| 
+ A| 
  UG 
  AU 
-G | 
-C | 
+ G| 
+ C| 
  UA 
-C | 
+ C| 
  AU 
  GC 
-U  |
+ U| 
  GU 
- U  C
+ UC
 """
     assert structure_free_energy(structureB) == 15.5
