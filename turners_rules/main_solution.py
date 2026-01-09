@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import re
 
 pairs = ['AU', 'CG', 'GC', 'UA', 'GU', 'UG'] # GU is wobble
 
@@ -22,9 +23,41 @@ U  A
  UA"""
 
 def structure_free_energy(structure) -> float:
-    # TODO
-    return 0.0
+    prev_pair = None # either none or a pair
+    lines = structure.strip().split('\n')
+    lines_energy = []
+    total_energy = 0.0
+    i = 0
+    while i < len(lines):
+        line = lines[i] 
+        if len(line) == 2:
+            bases_in_pair = len(re.findall(r'[AUGC]', line))
+            if bases_in_pair == 2:
+                # TODO
+            else:
+                # TODO
+            
+        else:
+            start_i = i
+            bases_in_loop = len(re.findall(r'[AUGC]', line))
+            if bases_in_loop == 2:
+                prev_pair = line
+            i += 1
+            while i < len(lines) and len(lines[i]) != 2:
+                bases_in_loop += len(re.findall(r'[AUGC]', lines[i]))
+                i += 1
+            loop_energy = turner_loop_map[turner_loop_map['bases in loop'] == bases_in_loop]['hairpin loop'][0]
+            lines_energy.append(loop_energy)
+            for j in range(start_i+1, i):
+                lines_energy.append("")
+            total_energy += loop_energy
 
+    return total_energy
+
+
+def graph_representation() -> dict:
+    # todo
+    return {}
 
 def runTests():
     structureA = """
@@ -59,3 +92,8 @@ A  C
  UC
 """
     assert structure_free_energy(structureB) == 15.5
+
+    structureC = """
+"""
+    assert structure_free_energy(structureC) == -3.2 #TODO
+
