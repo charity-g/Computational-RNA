@@ -127,3 +127,24 @@ C  U
 """
     assert structure_free_energy(structureC) == 7.9
 
+    structureD = """
+ G
+G  G
+U  G
+U  C
+ AU
+ UG
+ A|
+ U|
+ CG
+ UG
+ GU
+A  A
+G  G
+C  C
+ AU
+ G|
+ C|
+ UA
+"""
+    assert structure_free_energy(structureD) == 11.0
