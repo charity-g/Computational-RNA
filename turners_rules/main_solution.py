@@ -12,30 +12,31 @@ turner_loop_map = pd.read_csv('turner_loop_map.csv')
 # print(turner_map)
 # print(turner_loop_map)
 
-structure = """
- C
-U  U
-U  A
- GC
- UA
- G|
- CG
- UA"""
+
 
 def structure_free_energy(structure) -> float:
     prev_pair = None # either none or a pair
     lines = structure.strip().split('\n')
-    lines_energy = []
+    lines_energy = [0.0] * len(lines)  
     total_energy = 0.0
     i = 0
+
+    i, energy, prev_pair = check_hairpin_loop(lines, lines_energy, i)
+
     while i < len(lines):
         line = lines[i] 
         if len(line) == 2:
             bases_in_pair = len(re.findall(r'[AUGC]', line))
             if bases_in_pair == 2:
-                # TODO
+                if prev_pair is not None:
+                    bases_in_prev_pair = len(re.findall(r'[AUGC]', prev_pair))
+                    pair_energy = turner_map.loc[bases_in_pair, bases_in_prev_pair]
+                    lines_energy[lines.index(prev_pair)] = pair_energy
+                    total_energy += pair_energy
+                prev_pair = line
+                i += 1
             else:
-                # TODO
+
             
         else:
             start_i = i
@@ -48,7 +49,7 @@ def structure_free_energy(structure) -> float:
                 i += 1
             loop_energy = turner_loop_map[turner_loop_map['bases in loop'] == bases_in_loop]['hairpin loop'][0]
             lines_energy.append(loop_energy)
-            for j in range(start_i+1, i):
+            for _j in range(start_i+1, i):
                 lines_energy.append("")
             total_energy += loop_energy
 
@@ -61,15 +62,26 @@ def graph_representation() -> dict:
 
 def runTests():
     structureA = """
- AG 
-U  C
-G  A
- UG 
- G| 
- CG 
- AU 
+ C
+A  A
+ GU
+ A|
+ G|
+ UG
+U  G
+U  U
+C  A
+ GC 
+ GC
+ U|
+ UG
+ CG
+ AU
+ GC
+ A|
+ GC
 """
-    assert structure_free_energy(structureA) == -3.4 # TODO
+    assert structure_free_energy(structureA) == 14.2 
     structureB = """
  GU 
 U  G
@@ -92,8 +104,26 @@ A  C
  UC
 """
     assert structure_free_energy(structureB) == 15.5
-
+ 
     structureC = """
+ AA 
+G  A
+G  G
+ GC 
+C  C
+G  A
+C  U
+ AU 
+ GC
+ UA
+ GU
+ G|
+ U|
+ AU
+ A|
+ A|
+ UA
+ UG
 """
-    assert structure_free_energy(structureC) == -3.2 #TODO
+    assert structure_free_energy(structureC) == 7.9
 
