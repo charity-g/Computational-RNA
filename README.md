@@ -12,12 +12,33 @@
     - folding in 3d space + interaction with water molecules
 
 
-### Turner's Rules
+### Turner's Rules for Watson-Crick-Franklin Helices
+
+- https://rna.urmc.rochester.edu/NNDB/rna_2004/rna_2004_watson_crick_helices.html
+- https://rna.urmc.rochester.edu/NNDB/rna_2004/rna_2004_gu_pairs.html 
+
+### Turner's Rules for Helices and loops
 - Calculating RNA duplex stability
+https://kelleybioinfo.org/algorithms/default.php?o=3
+https://rna.urmc.rochester.edu/NNDB/rna_2004/rna_2004_watson_crick_helices.html#references
+
+- What did we learn here?
+
+### Sequence Alignment
+
+### Motifs
+
+### 
+
+### Phylogeny
 
 ### RNA Folding
 
 - effect of protein binding on rna folding  https://www.sciencedirect.com/science/chapter/referencework/abs/pii/B978012374920800326X
+
+### Riboswitch design
+
+### Protac 
 
 ### Random
 - Dot Bracket Notation
