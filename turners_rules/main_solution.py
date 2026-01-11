@@ -5,15 +5,22 @@ import re
 pairs = ['AU', 'CG', 'GC', 'UA', 'GU', 'UG'] # GU is wobble
 
 turner_map = pd.read_csv('turner_map.csv')
-turner_map = pd.pivot_table(turner_map, index=["top"], columns=["bottom"], values="energy")
-
+turner_map_for_printing = pd.pivot_table(turner_map, index=["top"], columns=["bottom"], values="energy")
 turner_loop_map = pd.read_csv('turner_loop_map.csv')
 
-# print(turner_map)
-# print(turner_loop_map)
+print(turner_map_for_printing)
+print(turner_loop_map)
 
 def findall_rna_bases(line):
     return re.findall(r'[AUGC]', line)
+
+def get_prev_pair_index(lines, curr_i, prev_pair):
+    for j in range(curr_i-1, -1, -1):
+        if lines[j] == prev_pair:
+            return j
+    raise ValueError(f"Previous pair {prev_pair} not found in lines")
+
+# ==================
 
 def calculate_hairpin_loop(lines, lines_energy, i):
     """
@@ -57,15 +64,14 @@ def calculate_neighbor_pair(lines, lines_energy, i, prev_pair):
     :returns i: the current line index (starting after the neighbor pair)
     :returns prev_pair: the complete line that is a pair  
     """
-        i, prev_pair = calculate_neighbor_pair(lines, lines_energy, i, prev_pair)
-        if prev_pair is not None:
-            bases_in_prev_pair = len(re.findall(r'[AUGC]', prev_pair))
-            pair_energy = turner_map.loc[bases_in_pair, bases_in_prev_pair]
-            lines_energy[lines.index(prev_pair)] = pair_energy
-            total_energy += pair_energy
-        prev_pair = line
-        i += 1
-    return [i, prev_pair]  # placeholder implementation
+    line = lines[i]
+    if prev_pair is not None:
+        curr_pair_bases = findall_rna_bases(line)
+        prev_pair_bases = findall_rna_bases(prev_pair)
+        pair_energy = turner_map[(turner_map['top'] == prev_pair_bases) & (turner_map['bottom'] == curr_pair_bases)]['energy'][0] # ROWS is previous pair, COLUMNS is current pair
+        lines_energy[get_prev_pair_index(lines, i, prev_pair)] = pair_energy
+        
+    return [i+1, line] 
 
 
 def calculate_bulge_loop(lines, lines_energy, i, prev_pair):
@@ -111,13 +117,12 @@ def calculate_free_energy(structure) -> float:
 
     while i < len(lines):
         line = lines[i] 
-        if len(line) == 2:
+        if len(line) == 2: # is not an internal loop
             bases_in_pair = len(findall_rna_bases(line))
             if bases_in_pair == 2:
                 i, prev_pair = calculate_neighbor_pair(lines, lines_energy, i, prev_pair)
             else:
                 i, prev_pair = calculate_bulge_loop(lines, lines_energy, i, prev_pair)
-            
         else:
             i, prev_pair = calculate_internal_loop(lines, lines_energy, i, prev_pair)
 
