@@ -12,16 +12,44 @@ turner_loop_map = pd.read_csv('turner_loop_map.csv')
 # print(turner_map)
 # print(turner_loop_map)
 
+def findall_bases_rna(line):
+    return re.findall(r'[AUGC]', line)
 
+def check_hairpin_loop(lines, lines_energy, i):
+    """
+    Docstring for check_hairpin_loop
+    
+    :param lines: lines of RNA in custom representation
+    :param lines_energy: lines of energy
+    :param i: current line index
+
+    :modifies lines_energy: updates energy for ONLY one line - the hairpin loop line
+
+    :returns i: the current line index (starting after the hairpin loop)
+    :returns prev_pair: the complete line that is a pair  
+    """
+    prev_pair = None
+    start_i = i
+    bases_in_loop = len(findall_bases_rna(lines[start_i]))
+    if bases_in_loop == 2:
+        prev_pair = lines[start_i]
+    
+    i += 1
+    while i < len(lines) and len(lines[i].strip()) != 2:
+        bases_in_loop += len(findall_bases_rna(lines[i]))
+        i += 1
+    loop_energy = turner_loop_map[turner_loop_map['bases in loop'] == bases_in_loop]['hairpin loop'][0]
+    lines_energy[start_i] = loop_energy
+    
+    return [i, prev_pair]
 
 def structure_free_energy(structure) -> float:
     prev_pair = None # either none or a pair
     lines = structure.strip().split('\n')
     lines_energy = [0.0] * len(lines)  
-    total_energy = 0.0
     i = 0
 
-    i, energy, prev_pair = check_hairpin_loop(lines, lines_energy, i)
+    i, prev_pair = check_hairpin_loop(lines, lines_energy, i)
 
     while i < len(lines):
         line = lines[i] 
@@ -39,20 +67,10 @@ def structure_free_energy(structure) -> float:
 
             
         else:
-            start_i = i
-            bases_in_loop = len(re.findall(r'[AUGC]', line))
-            if bases_in_loop == 2:
-                prev_pair = line
-            i += 1
-            while i < len(lines) and len(lines[i]) != 2:
-                bases_in_loop += len(re.findall(r'[AUGC]', lines[i]))
-                i += 1
-            loop_energy = turner_loop_map[turner_loop_map['bases in loop'] == bases_in_loop]['hairpin loop'][0]
-            lines_energy.append(loop_energy)
-            for _j in range(start_i+1, i):
-                lines_energy.append("")
-            total_energy += loop_energy
+            check_internal_loop(lines, lines_energy, i, prev_pair)
 
+
+    total_energy = sum(lines_energy)
     return total_energy
 
 
