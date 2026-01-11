@@ -96,7 +96,7 @@ def calculate_bulge_loop(lines, lines_energy, i):
     return i
 
 
-def calculate_internal_loop(lines, lines_energy, i, prev_pair):
+def calculate_internal_loop(lines, lines_energy, i):
     """
     Docstring for calculate_internal_loop
     
@@ -107,10 +107,18 @@ def calculate_internal_loop(lines, lines_energy, i, prev_pair):
 
     :modifies lines_energy: updates energy for ONLY one line - the neighbor pair line
 
-    :returns i: the current line index (starting after the neighbor pair)
-    :returns prev_pair: the complete line that is a pair  
+    :returns i: the current line index (starting at the neighbor pair)
     """
-    return [i, prev_pair]  # placeholder implementation
+    bases_in_loop = 0
+    start_i = i
+    while i < len(lines) and len(lines[i].strip()) > 2:
+        bases_in_loop += len(findall_rna_bases(lines[i]))
+        i += 1
+    
+    internal_loop_energy = turner_loop_map[turner_loop_map['bases in loop'] == bases_in_loop]['internal loop'][0]
+    lines_energy[start_i] = internal_loop_energy
+
+    return i
 
 def calculate_free_energy(structure) -> float:
     prev_pair = None # either none or a pair
@@ -129,16 +137,12 @@ def calculate_free_energy(structure) -> float:
             else:
                 i = calculate_bulge_loop(lines, lines_energy, i)
         else:
-            i, prev_pair = calculate_internal_loop(lines, lines_energy, i, prev_pair)
+            i = calculate_internal_loop(lines, lines_energy, i)
 
 
     total_energy = sum(lines_energy)
     return total_energy
 
-
-def graph_representation() -> dict:
-    # todo
-    return {}
 
 def runTests():
     structureA = """
