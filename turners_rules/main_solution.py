@@ -12,12 +12,12 @@ turner_loop_map = pd.read_csv('turner_loop_map.csv')
 # print(turner_map)
 # print(turner_loop_map)
 
-def findall_bases_rna(line):
+def findall_rna_bases(line):
     return re.findall(r'[AUGC]', line)
 
-def check_hairpin_loop(lines, lines_energy, i):
+def calculate_hairpin_loop(lines, lines_energy, i):
     """
-    Docstring for check_hairpin_loop
+    Docstring for calculate_hairpin_loop
     
     :param lines: lines of RNA in custom representation
     :param lines_energy: lines of energy
@@ -30,44 +30,96 @@ def check_hairpin_loop(lines, lines_energy, i):
     """
     prev_pair = None
     start_i = i
-    bases_in_loop = len(findall_bases_rna(lines[start_i]))
+    bases_in_loop = len(findall_rna_bases(lines[start_i]))
     if bases_in_loop == 2:
         prev_pair = lines[start_i]
     
     i += 1
     while i < len(lines) and len(lines[i].strip()) != 2:
-        bases_in_loop += len(findall_bases_rna(lines[i]))
+        bases_in_loop += len(findall_rna_bases(lines[i]))
         i += 1
     loop_energy = turner_loop_map[turner_loop_map['bases in loop'] == bases_in_loop]['hairpin loop'][0]
     lines_energy[start_i] = loop_energy
     
     return [i, prev_pair]
 
-def structure_free_energy(structure) -> float:
+def calculate_neighbor_pair(lines, lines_energy, i, prev_pair):
+    """
+    Docstring for calculate_neighbor_pair
+    
+    :param lines: lines of RNA in custom representation
+    :param lines_energy: lines of energy
+    :param i: current line index
+    :param prev_pair: the previous pair line
+
+    :modifies lines_energy: updates energy for ONLY one line - the neighbor pair line
+
+    :returns i: the current line index (starting after the neighbor pair)
+    :returns prev_pair: the complete line that is a pair  
+    """
+        i, prev_pair = calculate_neighbor_pair(lines, lines_energy, i, prev_pair)
+        if prev_pair is not None:
+            bases_in_prev_pair = len(re.findall(r'[AUGC]', prev_pair))
+            pair_energy = turner_map.loc[bases_in_pair, bases_in_prev_pair]
+            lines_energy[lines.index(prev_pair)] = pair_energy
+            total_energy += pair_energy
+        prev_pair = line
+        i += 1
+    return [i, prev_pair]  # placeholder implementation
+
+
+def calculate_bulge_loop(lines, lines_energy, i, prev_pair):
+    """
+    Docstring for calculate_bulge_loop
+    
+    :param lines: lines of RNA in custom representation
+    :param lines_energy: lines of energy
+    :param i: current line index
+    :param prev_pair: the previous pair line
+
+    :modifies lines_energy: updates energy for ONLY one line - the neighbor pair line
+
+    :returns i: the current line index (starting after the neighbor pair)
+    :returns prev_pair: the complete line that is a pair  
+    """
+    return [i, prev_pair]  # placeholder implementation
+
+
+def calculate_internal_loop(lines, lines_energy, i, prev_pair):
+    """
+    Docstring for calculate_internal_loop
+    
+    :param lines: lines of RNA in custom representation
+    :param lines_energy: lines of energy
+    :param i: current line index
+    :param prev_pair: the previous pair line
+
+    :modifies lines_energy: updates energy for ONLY one line - the neighbor pair line
+
+    :returns i: the current line index (starting after the neighbor pair)
+    :returns prev_pair: the complete line that is a pair  
+    """
+    return [i, prev_pair]  # placeholder implementation
+
+def calculate_free_energy(structure) -> float:
     prev_pair = None # either none or a pair
     lines = structure.strip().split('\n')
     lines_energy = [0.0] * len(lines)  
     i = 0
 
-    i, prev_pair = check_hairpin_loop(lines, lines_energy, i)
+    i, prev_pair = calculate_hairpin_loop(lines, lines_energy, i)
 
     while i < len(lines):
         line = lines[i] 
         if len(line) == 2:
-            bases_in_pair = len(re.findall(r'[AUGC]', line))
+            bases_in_pair = len(findall_rna_bases(line))
             if bases_in_pair == 2:
-                if prev_pair is not None:
-                    bases_in_prev_pair = len(re.findall(r'[AUGC]', prev_pair))
-                    pair_energy = turner_map.loc[bases_in_pair, bases_in_prev_pair]
-                    lines_energy[lines.index(prev_pair)] = pair_energy
-                    total_energy += pair_energy
-                prev_pair = line
-                i += 1
+                i, prev_pair = calculate_neighbor_pair(lines, lines_energy, i, prev_pair)
             else:
-
+                i, prev_pair = calculate_bulge_loop(lines, lines_energy, i, prev_pair)
             
         else:
-            check_internal_loop(lines, lines_energy, i, prev_pair)
+            i, prev_pair = calculate_internal_loop(lines, lines_energy, i, prev_pair)
 
 
     total_energy = sum(lines_energy)
@@ -99,7 +151,7 @@ C  A
  A|
  GC
 """
-    assert structure_free_energy(structureA) == 14.2 
+    assert calculate_free_energy(structureA) == 14.2 
     structureB = """
  GU 
 U  G
@@ -121,7 +173,7 @@ A  C
  GU 
  UC
 """
-    assert structure_free_energy(structureB) == 15.5
+    assert calculate_free_energy(structureB) == 15.5
  
     structureC = """
  AA 
@@ -143,7 +195,7 @@ C  U
  UA
  UG
 """
-    assert structure_free_energy(structureC) == 7.9
+    assert calculate_free_energy(structureC) == 7.9
 
     structureD = """
  G
@@ -165,4 +217,4 @@ C  C
  C|
  UA
 """
-    assert structure_free_energy(structureD) == 11.0
+    assert calculate_free_energy(structureD) == 11.0
