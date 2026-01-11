@@ -120,7 +120,7 @@ def calculate_internal_loop(lines, lines_energy, i):
 
     return i
 
-def calculate_free_energy(structure) -> float:
+def calculate_free_energy(structure, debug=False) -> float:
     prev_pair = None # either none or a pair
     lines = structure.strip().split('\n')
     lines_energy = [0.0] * len(lines)  
@@ -141,5 +141,7 @@ def calculate_free_energy(structure) -> float:
 
 
     total_energy = sum(lines_energy)
+    if debug:
+        return [total_energy, lines_energy]
     return total_energy
 
