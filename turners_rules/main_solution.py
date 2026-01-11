@@ -1,4 +1,3 @@
-import numpy as np
 import pandas as pd
 import re
 
@@ -73,8 +72,7 @@ def calculate_neighbor_pair(lines, lines_energy, i, prev_pair):
         
     return [i+1, line] 
 
-
-def calculate_bulge_loop(lines, lines_energy, i, prev_pair):
+def calculate_bulge_loop(lines, lines_energy, i):
     """
     Docstring for calculate_bulge_loop
     
@@ -86,9 +84,16 @@ def calculate_bulge_loop(lines, lines_energy, i, prev_pair):
     :modifies lines_energy: updates energy for ONLY one line - the neighbor pair line
 
     :returns i: the current line index (starting after the neighbor pair)
-    :returns prev_pair: the complete line that is a pair  
     """
-    return [i, prev_pair]  # placeholder implementation
+    start_i = i
+    bases_in_bulge = 0
+    while i < len(lines) and len(findall_rna_bases(lines[i])) <= 2:
+        bases_in_bulge += 1
+        i += 1
+    bulge_energy = turner_loop_map[turner_loop_map['bases in loop'] == bases_in_bulge]['bulge loop'][0]
+    lines_energy[start_i] = bulge_energy
+
+    return i
 
 
 def calculate_internal_loop(lines, lines_energy, i, prev_pair):
@@ -122,7 +127,7 @@ def calculate_free_energy(structure) -> float:
             if bases_in_pair == 2:
                 i, prev_pair = calculate_neighbor_pair(lines, lines_energy, i, prev_pair)
             else:
-                i, prev_pair = calculate_bulge_loop(lines, lines_energy, i, prev_pair)
+                i = calculate_bulge_loop(lines, lines_energy, i)
         else:
             i, prev_pair = calculate_internal_loop(lines, lines_energy, i, prev_pair)
 
