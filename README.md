@@ -2,15 +2,13 @@
 
 ## Table of Contents:
 
-
 ### RNA structure 
-- Fundamentals of RNA structures
+- Fundamentals of RNA structures lecture (< 40 min)
 - https://www.youtube.com/watch?v=WCrlm18KQ48
 - Takeaways:
     - primary structure: watson-crick-franklin base pairings or wobble pairs (non GC/AT/AU pairings, for example GU)
     - secondary structure: hairpin loops, often calculated by minimizing free energy change for folding, ΔG° (Zuber et al, 2022)
     - folding in 3d space + interaction with water molecules
-
 
 ### Turner's Rules for Watson-Crick-Franklin Helices
 
